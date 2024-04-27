@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Set viewport width to device width -->
+    <title>DirectImage</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 100%; /* Change max-width to 100% to occupy full screen */
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Center align all text */
+        }
+
+        h2 {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            text-align: center; /* Center align form inputs */
+            margin-bottom: 20px;
+        }
+
+        #phoneNumber {
+            text-align: center; /* Center align the phone number input */
+        }
+
+        #previewImage {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 20px auto;
+            display: none;
+        }
+
+        #uploadButton {
+            width: 60px; /* Set fixed width for the button */
+            margin-top: 12px;
+            padding: 0; /* Remove padding */
+            border: none;
+            background: none; /* Remove background */
+            cursor: pointer;
+            transition: transform 0.3s ease; /* Add transition effect */
+            display: inline-block; /* Ensure the button is inline-block */
+        }
+
+        #uploadButton img {
+            width: 100%;
+            height: auto;
+        }
+
+        #uploadButton:hover {
+            transform: scale(1.1); /* Add hover effect */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img src="public/flc_design20240427229203.png" alt="Upload from Camera" style="width: 200px; height: auto;"> <!-- Specify width and height -->
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number:</label>
+                <br> <!-- Add line break to ensure the input is centered -->
+                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required style="text-align: center;">
+                <div class="invalid-feedback">Please enter a valid phone number.</div>
+            </div>
+            <div class="custom-file">
+                <input type="file" name="userFile" id="userFile" class="custom-file-input" accept="image/*" required>
+                <label class="custom-file-label" for="userFile">Choose Youre Image</label>
+                <div class="invalid-feedback">Please select an image file.</div>
+            </div>
+            <img id="previewImage" alt="Preview Image">
+            <button type="submit" id="uploadButton">
+                <img src="public/clipart11037.png" alt="Upload">
+            </button>
+        </form>
+    </div>
+
+    <script>
+        function previewImage(event) {
+            var input = event.target;
+            var reader = new FileReader();
+            reader.onload = function () {
+                var imgElement = document.getElementById('previewImage');
+                imgElement.src = reader.result;
+                imgElement.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        document.getElementById('userFile').addEventListener('change', previewImage);
+
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            var phoneNumberInput = document.getElementById('phoneNumber').value;
+            var phoneNumberPattern = /^0[0-9]{9}$/;
+            if (!phoneNumberPattern.test(phoneNumberInput)) {
+                document.getElementById('phoneNumber').classList.add('is-invalid');
+                return;
+            } else {
+                document.getElementById('phoneNumber').classList.remove('is-invalid');
+            }
+
+            var formData = new FormData();
+            formData.append('user', document.getElementById('userFile').files[0]);
+            formData.append('phoneNumber', phoneNumberInput);
+
+            console.log("POST request to /upload initiated");
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success === "ok") {
+                    console.log("File uploaded successfully");
+                    return fetch('/check', {
+                        method: 'POST',
+                        body: JSON.stringify({ phoneNumber: phoneNumberInput, fileUrl: data.file_url }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } 
+                
+                else {
+                    alert("File upload failed. Please try again.");
+                }
+            })
+            .then(response => {
+                if (response && response.ok) {
+                    console.log("POST request to /check successful");
+                    window.location.href = "manage.html";
+                } else {
+                    console.error("Failed to make POST request to /check");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+
+</html>
