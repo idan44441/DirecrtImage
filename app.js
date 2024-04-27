@@ -44,6 +44,7 @@ _app.post("/check", (req, resp) => {
     });
 });
 
+
 _app.get("/checks", (req, resp) => {
     // Assuming you are passing the phone number in the request body
 
@@ -51,8 +52,10 @@ _app.get("/checks", (req, resp) => {
         if (err) {
             console.error("Error executing SQL query:", err);
             resp.status(500).send("Internal server error");
+            db.destroy();
         } else {
             resp.send(result);
+            db.destroy();
         }
     });
 });
