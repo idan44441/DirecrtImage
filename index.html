@@ -70,16 +70,16 @@
 
 <body>
     <div class="container">
-        <img src="public/flc_design20240427229203.png" alt="Upload from Camera" style="width: 200px; height: auto;"> <!-- Specify width and height -->
+        <img src="public/flc_design20240427229203.png" alt="Upload from Camera" style="width: 250px; height: auto;"> <!-- Specify width and height -->
         <form id="uploadForm" enctype="multipart/form-data">
             <div class="form-group">
-                <label for="phoneNumber">Phone Number:</label>
+                <label for="">Phone Number:</label>
                 <br> <!-- Add line break to ensure the input is centered -->
-                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required style="text-align: center;">
+                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required style="text-align: center; font-size: 16px; padding: 10px;">
                 <div class="invalid-feedback">Please enter a valid phone number.</div>
             </div>
             <div class="custom-file">
-                <input type="file" name="userFile" id="userFile" class="custom-file-input" accept="image/*" required>
+                <input type="file" name="userFile" id="userFile" class="custom-file-input" accept="image/*" required style="font-size: 16px; padding: 10px;">
                 <label class="custom-file-label" for="userFile">Choose Youre Image</label>
                 <div class="invalid-feedback">Please select an image file.</div>
             </div>
