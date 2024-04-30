@@ -73,7 +73,7 @@
         <img src="public/flc_design20240427229203.png" alt="Upload from Camera" style="width: 250px; height: auto;"> <!-- Specify width and height -->
         <form id="uploadForm" enctype="multipart/form-data">
             <div class="form-group">
-                <label for="">Phone Number:</label>
+                <label for="">Phone_Number:</label>
                 <br> <!-- Add line break to ensure the input is centered -->
                 <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required style="text-align: center; font-size: 16px; padding: 10px;">
                 <div class="invalid-feedback">Please enter a valid phone number.</div>
@@ -159,3 +159,6 @@
 </body>
 
 </html>
+
+
+write for me on my index.html a additional that when the user press "upload" the program taking the number that the user entered and check if the number exist on database (you can use the "get" on app.js: _app.post("/phoneExist", (req, resp) =>) if the phonnumber exist write on the textbox of phonenumber on red to fix and do not continue with the upload until the user is fixing. when he will fix you need to check again if the new phonenumber is exist, and if now it is not exist let the user the option to continue and to press "upload".
