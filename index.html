@@ -80,93 +80,17 @@
             </div>
             <div class="custom-file">
                 <input type="file" name="userFile" id="userFile" class="custom-file-input" accept="image/*" required style="font-size: 16px; padding: 10px;">
-                <label class="custom-file-label" for="userFile">Choose Your Image</label>
+                <label class="custom-file-label" for="userFile">Choose Youre Image</label>
                 <div class="invalid-feedback">Please select an image file.</div>
             </div>
             <img id="previewImage" alt="Preview Image">
-            <button type="button" id="uploadButton">
+            <button type="submit" id="uploadButton">
                 <img src="public/clipart11037.png" alt="Upload">
             </button>
         </form>
     </div>
 
     <script>
-        document.getElementById('uploadButton').addEventListener('click', function(event) {
-            event.preventDefault();
-
-            var phoneNumberInput = document.getElementById('phoneNumber').value;
-            var phoneNumberPattern = /^0[0-9]{9}$/;
-            if (!phoneNumberPattern.test(phoneNumberInput)) {
-                document.getElementById('phoneNumber').classList.add('is-invalid');
-                return;
-            } else {
-                document.getElementById('phoneNumber').classList.remove('is-invalid');
-            }
-
-            // Send a POST request to check if the phone number exists
-            fetch('/phoneExist', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ phoneNumber: phoneNumberInput })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if (data.exists) {
-                    // Phone number exists in the database
-                    document.getElementById('phoneNumber').classList.remove('is-valid');
-                    document.getElementById('phoneNumber').classList.add('is-invalid');
-                } else {
-                    // Phone number doesn't exist in the database
-                    document.getElementById('phoneNumber').classList.add('is-valid');
-                    document.getElementById('phoneNumber').classList.remove('is-invalid');
-                    
-                    // Proceed with image upload
-                    var formData = new FormData();
-                    formData.append('user', document.getElementById('userFile').files[0]);
-                    formData.append('phoneNumber', phoneNumberInput);
-
-                    console.log("POST request to /upload initiated");
-
-                    fetch('/upload', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success === "ok") {
-                            console.log("File uploaded successfully");
-                            return fetch('/check', {
-                                method: 'POST',
-                                body: JSON.stringify({ phoneNumber: phoneNumberInput, fileUrl: data.file_url }),
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                        } else {
-                            alert("File upload failed. Please try again.");
-                        }
-                    })
-                    .then(response => {
-                        if (response && response.ok) {
-                            console.log("POST request to /check successful");
-                            window.location.href = "manage.html";
-                        } else {
-                            console.error("Failed to make POST request to /check");
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        });
-
         function previewImage(event) {
             var input = event.target;
             var reader = new FileReader();
@@ -179,7 +103,61 @@
         }
 
         document.getElementById('userFile').addEventListener('change', previewImage);
+
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            var phoneNumberInput = document.getElementById('phoneNumber').value;
+            var phoneNumberPattern = /^0[0-9]{9}$/;
+            if (!phoneNumberPattern.test(phoneNumberInput)) {
+                document.getElementById('phoneNumber').classList.add('is-invalid');
+                return;
+            } else {
+                document.getElementById('phoneNumber').classList.remove('is-invalid');
+            }
+
+            var formData = new FormData();
+            formData.append('user', document.getElementById('userFile').files[0]);
+            formData.append('phoneNumber', phoneNumberInput);
+
+            console.log("POST request to /upload initiated");
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success === "ok") {
+                    console.log("File uploaded successfully");
+                    return fetch('/check', {
+                        method: 'POST',
+                        body: JSON.stringify({ phoneNumber: phoneNumberInput, fileUrl: data.file_url }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } 
+                
+                else {
+                    alert("File upload failed. Please try again.");
+                }
+            })
+            .then(response => {
+                if (response && response.ok) {
+                    console.log("POST request to /check successful");
+                    window.location.href = "manage.html";
+                } else {
+                    console.error("Failed to make POST request to /check");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
     </script>
 </body>
 
 </html>
+
+
