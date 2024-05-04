@@ -31,9 +31,7 @@ const upload = _multer({
 _app.post("/check", (req, resp) => {
     // Assuming you are passing the phone number in the request body
     const phoneNumber = req.body.phoneNumber;
-    const Fileurl = req.body.fileUrl;
-
-    
+    const Fileurl = req.body.fileUrl; 
     db.query("INSERT INTO `USER` (`num`, `phoneNumber` , `imageUrl`) VALUES ('null', ? , ?)", [phoneNumber,Fileurl], (err, result) => {
         if (err) {
             console.error("Error executing SQL query:", err);
@@ -59,6 +57,35 @@ _app.get("/checks", (req, resp) => {
         }
     });
 });
+
+
+
+_app.post("/phoneExist", async (req, res) => {
+    try {
+        // Assuming you are passing the phone number in the request body
+        const phoneNumber = req.body.phoneNumber;
+
+        // Using parameterized query to prevent SQL injection
+        db.query(`SELECT * FROM USER WHERE phoneNumber = '${phoneNumber}'`, (err, result) => {
+            if (err) {
+                console.error("Error executing SQL query:", err);
+                resp.status(500).send("Internal server error");
+            } else {    
+                // Checking if any user exists with the given phone number
+                if (result.length > 0) {
+                    res.status(200).json({ exists: true });
+                } else {
+                    res.status(200).json({ exists: false });
+                }}
+        });
+
+
+    } catch (error) {
+        console.error("Error executing SQL query:", error);
+        res.status(500).send("Internal server error");
+    }
+});
+
 
 
 _app.get("/", (req, res) => {
@@ -104,6 +131,81 @@ _app.get('/images', function(req, res) {
         });
 
         res.json(filesArr);
+    });
+});
+
+
+_app.get('/imagesUrl', function(req, res) {
+    const imgFolder = path.join(__dirname, '/assets/');
+    const fs = require('fs');
+
+    fs.readdir(imgFolder, function(err, files) {
+        if (err) {
+            return console.error(err);
+        }
+
+        const jpgFiles = files.filter(file => {
+            const extension = path.extname(file).toLowerCase();
+            return extension === '.jpg' || extension === '.JPG';
+        });
+
+        const filesArr = [];
+
+        jpgFiles.forEach(file => {
+            const FileLocation = 'assets/' + file;
+            const filePath = path.join(imgFolder, file);
+
+            db.query("SELECT `CreationDate`,`num` FROM `USER` WHERE `imageUrl` LIKE ?", [FileLocation], (err, result) => {
+                if (err) {
+                    console.error("Error executing SQL query:", err);
+                    res.status(500).send("Internal server error");
+                    return; // return early to prevent further execution
+                }
+
+                const creationDate = result.length > 0 ? result[0].CreationDate : null;
+                const IdUser = result.length > 0 ? result[0].num : null;
+
+                const imageData = fs.readFileSync(filePath, { encoding: 'base64' });
+                filesArr.push({IdUser: IdUser, name: file, creationDate: creationDate});
+                if (filesArr.length === jpgFiles.length) {
+                    res.json(filesArr);
+                }
+            });
+        });
+    });
+});
+
+_app.get('/imageDetails', function(req, res) {
+    const imgName = req.query.imageName;
+    const imgPath = path.join(__dirname, 'assets', imgName); // Constructing the path to the image
+
+    const fs = require('fs');
+
+    fs.readFile(imgPath, function(err, data) {
+        if (err) {
+            console.error(err);
+            return res.status(404).send("Image not found");
+        }
+
+        db.query("SELECT `CreationDate`, `num` FROM `USER` WHERE `imageUrl` LIKE ?", ['assets/' + imgName], (err, result) => {
+            if (err) {
+                console.error("Error executing SQL query:", err);
+                return res.status(500).send("Internal server error");
+            }
+
+            const creationDate = result.length > 0 ? result[0].CreationDate : null;
+            const IdUser = result.length > 0 ? result[0].num : null;
+
+            // Convert image data to base64
+            const imageData = data.toString('base64');
+
+            res.json({
+                IdUser: IdUser,
+                name: imgName,
+                creationDate: creationDate,
+                imageData: imageData
+            });
+        });
     });
 });
 
