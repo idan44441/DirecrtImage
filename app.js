@@ -32,7 +32,7 @@ _app.post("/check", (req, resp) => {
     // Assuming you are passing the phone number in the request body
     const phoneNumber = req.body.phoneNumber;
     const Fileurl = req.body.fileUrl; 
-    db.query("INSERT INTO `USER` (`num`, `phoneNumber` , `imageUrl`) VALUES ('null', ? , ?)", [phoneNumber,Fileurl], (err, result) => {
+    db.query("INSERT INTO `USER` (`user_id`, `phoneNumber` , `imageUrl`) VALUES ('null', ? , ?)", [phoneNumber,Fileurl], (err, result) => {
         if (err) {
             console.error("Error executing SQL query:", err);
             resp.status(500).send("Internal server error");
@@ -155,7 +155,7 @@ _app.get('/imagesUrl', function(req, res) {
             const FileLocation = 'assets/' + file;
             const filePath = path.join(imgFolder, file);
 
-            db.query("SELECT `CreationDate`,`num` FROM `USER` WHERE `imageUrl` LIKE ?", [FileLocation], (err, result) => {
+            db.query("SELECT `CreationDate`,`user_id` FROM `USER` WHERE `imageUrl` LIKE ?", [FileLocation], (err, result) => {
                 if (err) {
                     console.error("Error executing SQL query:", err);
                     res.status(500).send("Internal server error");
@@ -163,7 +163,7 @@ _app.get('/imagesUrl', function(req, res) {
                 }
 
                 const creationDate = result.length > 0 ? result[0].CreationDate : null;
-                const IdUser = result.length > 0 ? result[0].num : null;
+                const IdUser = result.length > 0 ? result[0].user_id : null;
 
                 const imageData = fs.readFileSync(filePath, { encoding: 'base64' });
                 filesArr.push({IdUser: IdUser, name: file, creationDate: creationDate});
@@ -187,14 +187,14 @@ _app.get('/imageDetails', function(req, res) {
             return res.status(404).send("Image not found");
         }
 
-        db.query("SELECT `CreationDate`, `num` FROM `USER` WHERE `imageUrl` LIKE ?", ['assets/' + imgName], (err, result) => {
+        db.query("SELECT `CreationDate`, `user_id` FROM `USER` WHERE `imageUrl` LIKE ?", ['assets/' + imgName], (err, result) => {
             if (err) {
                 console.error("Error executing SQL query:", err);
                 return res.status(500).send("Internal server error");
             }
 
             const creationDate = result.length > 0 ? result[0].CreationDate : null;
-            const IdUser = result.length > 0 ? result[0].num : null;
+            const IdUser = result.length > 0 ? result[0].user_id : null;
 
             // Convert image data to base64
             const imageData = data.toString('base64');
